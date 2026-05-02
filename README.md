@@ -1,6 +1,6 @@
 # OnboardIQ — Automated B2B Customer Onboarding Orchestration Engine
 
-> A production-grade n8n automation that monitors trial accounts, detects stall patterns, sends personalized interventions, and reports onboarding analytics — replacing $30K–$80K/year tools like Gainsight with a free-tier stack.
+> An n8n automation that monitors trial accounts, detects stall patterns, sends personalized interventions, and reports onboarding analytics — replacing $30K–$80K/year tools like Gainsight with a free-tier stack.
 
 ---
 
@@ -423,33 +423,3 @@ onboardiq/
 ├── csms.csv                    # Airtable CSMs table schema + sample data
 ├── webhook_log.csv             # Airtable Webhook_Log table schema (empty — populated by workflow)
 └── README.md                   # This file
-```
-
----
-
-## Interview Talking Points
-
-**On the architecture:**
-> "I built a behavioral onboarding engine — instead of time-based email sequences, every intervention is triggered by the user's actual position in the onboarding flow. This makes each touchpoint contextually relevant and dramatically more effective than generic drip campaigns."
-
-**On idempotency:**
-> "I implemented an idempotency check on every intervention — the system looks up whether this specific intervention has already been sent before firing. This means retries, duplicate webhook deliveries, and repeated cron runs never result in a customer receiving the same email twice."
-
-**On content decoupling:**
-> "The template content lives in Airtable, not in n8n — this decouples content from logic. The CS team can A/B test messaging and update copy without needing any workflow changes."
-
-**On the health score:**
-> "Health score isn't just completion percentage — each intervention received subtracts 10 points. An account that needed 3 nudges to complete onboarding scores lower than one that completed organically. This reflects real engagement quality, not just output."
-
-**On what this replaces:**
-> "At the enterprise level, this is what Gainsight and Totango sell for $30,000–$80,000 per year. This system delivers the core of that stack using tools most SaaS companies already pay for — n8n, Airtable, Gmail, and OpenAI — at effectively zero additional cost."
-
----
-
-## License
-
-MIT — free to use, modify, and deploy.
-
----
-
-*Built by Salman Ahmed — automation engineer specializing in AI-powered workflow systems.*
