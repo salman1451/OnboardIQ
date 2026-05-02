@@ -1,0 +1,15 @@
+﻿step_name,step_order,status,completed_at,hours_to_complete,is_blocking,Accounts
+,,,,,,
+,,,,,,
+Account Setup,1,Pending,,,=1,Test Corp
+API Setup,2,Pending,,,=1,Test Corp
+Team Invite,3,Pending,,,=0,Test Corp
+First Integration,4,Pending,,,=1,Test Corp
+First Report,5,Pending,,,=0,Test Corp
+Dashboard Reviewed,6,Pending,,,=0,Test Corp
+Account Setup,1,Completed,2026-05-02T08:58:17.501-04:00,,=1,Test Corp
+API Setup,2,Pending,,,=1,Test Corp
+Team Invite,3,Pending,,,=0,Test Corp
+First Integration,4,Pending,,,=1,Test Corp
+First Report,5,Completed,2026-05-02T07:16:17.361-04:00,,=0,Test Corp
+Dashboard Reviewed,6,Pending,,,=0,Test Corp

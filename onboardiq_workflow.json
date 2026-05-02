@@ -1,0 +1,2660 @@
+{
+  "name": "oo",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "e7e147cc-fa27-4af2-8787-d4f56fb4a75b",
+      "name": "Stall Detection Cron",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "e4acd513-e1f7-4c28-b0da-f71adfad76f9",
+      "name": "Loop Through Accounts",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        720,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ Number($json.hours_since_activity) }}",
+              "rightValue": "={{ 120 }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "id": "10c42d72-e114-4bda-b5ce-5ea9bbe1583b",
+      "name": "Stalled >= 120h",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        960,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.hours_since_activity }}",
+              "rightValue": 96,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "id": "bf3496fc-731a-4eeb-a281-ed1bf703bb63",
+      "name": "Stalled >= 96h",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.hours_since_activity }}",
+              "rightValue": 72,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "id": "fb4ed04a-d557-41e7-8806-f0c5941c6c40",
+      "name": "Stalled >= 72h",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.hours_since_activity }}",
+              "rightValue": 48,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "id": "4280e1fe-f85a-4bfb-b3ac-c5aaa2427686",
+      "name": "Stalled >= 48h",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.hours_since_activity }}",
+              "rightValue": 24,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "id": "d0c2c20d-5ad1-4b50-ba53-f48a9c6e9adf",
+      "name": "Stalled >= 24h",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        840
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "b0a70f55-2853-42b2-adaa-ddbf37523ae3",
+      "name": "No Action Required",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        860
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const account = $input.first().json;\nconst hours = account.hours_since_activity;\n\nlet escalation_level = 'L1';\nlet notify_targets = [account.csm_slack_id];\nlet escalation_label = 'CSM Only';\n\nif (hours >= 120) {\n  escalation_level = 'L4';\n  notify_targets = [account.csm_slack_id, '#cs-managers', '#sales-team'];\n  escalation_label = 'CSM + CS Manager + Sales – RESCUE CALL';\n} else if (hours >= 96) {\n  escalation_level = 'L3';\n  notify_targets = [account.csm_slack_id, '#cs-managers'];\n  escalation_label = 'CSM + CS Manager';\n} else if (hours >= 72) {\n  escalation_level = 'L2';\n  notify_targets = [account.csm_slack_id, '#cs-managers'];\n  escalation_label = 'CSM + CS Manager';\n} else if (hours >= 48) {\n  escalation_level = 'L1';\n  notify_targets = [account.csm_slack_id];\n  escalation_label = 'CSM Only – Step-Specific';\n} else {\n  escalation_level = 'L0';\n  notify_targets = [account.csm_slack_id];\n  escalation_label = 'CSM Only – Day 1';\n}\n\nreturn [{\n  json: {\n    ...account,\n    escalation_level,\n    escalation_label,\n    notify_targets\n  }\n}];"
+      },
+      "id": "b3f97c17-a58e-435a-9615-6dc681064b3d",
+      "name": "Set Escalation Level",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty"
+              }
+            },
+            {
+              "id": "84c052e8-3bb7-4ed2-8c22-74b2c7ff3a1d",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a4cf9329-ba69-49cc-aead-92139e436896",
+      "name": "Intervention Already Sent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        480
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "702c4407-c4ed-4811-9abf-e5ed192a10e0",
+      "name": "Skip – Already Intervened",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl48GkIqoiQYu1EF",
+          "mode": "list",
+          "cachedResultName": "Templates",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tbl48GkIqoiQYu1EF"
+        },
+        "filterByFormula": "=={{ 'AND({Step Name} = \"' + $('Set Escalation Level').first().json.current_stuck_step + '\", {Active} = TRUE())' }}",
+        "options": {}
+      },
+      "id": "927a8546-6f5c-4b91-b353-546e21d1157d",
+      "name": "Get Intervention Template",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        500
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const template = $input.first().json;\nconst account = $('Set Escalation Level').first().json;\n\nconst subject = (template['Subject Line'] || 'Your onboarding needs attention')\n  .replace('{{company_name}}', account.company_name)\n  .replace('{{stuck_step}}', account.current_stuck_step);\n\nconst body = (template['Body HTML'] || '<p>Hi, we noticed you may need help with onboarding.</p>')\n  .replace(/{{company_name}}/g, account.company_name)\n  .replace(/{{stuck_step}}/g, account.current_stuck_step)\n  .replace(/{{trial_end}}/g, account.trial_end)\n  .replace(/{{csm_name}}/g, account.account_owner || 'Your Customer Success Manager');\n\nreturn [{\n  json: {\n    ...account,\n    template_name:    template['Step Name'],\n    template_subject: subject,\n    template_body:    body,\n    to_email:         'admin@' + account.domain,\n    intervention_type: template['Intervention Type'] || 'Email'\n  }\n}];"
+      },
+      "id": "a1f98732-a5cb-4f12-b80b-e1dc51cc6929",
+      "name": "Merge Template with Account",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to_email }}",
+        "subject": "={{ $json.template_subject }}",
+        "message": "={{ $json.template_body }}",
+        "options": {}
+      },
+      "id": "d49d9a76-49a5-4c8e-bb4c-c6251b2386c6",
+      "name": "Send Intervention Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        480
+      ],
+      "webhookId": "e102bc72-d33f-4bc7-ab16-4cf4ebc5de31",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oIdFZ2FQ3e90YGF4",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const account = $('Merge Template with Account').first().json;\n\nconst subject = `[OnboardIQ] Intervention Sent – ${account.company_name} stalled on ${account.current_stuck_step}`;\n\nconst body = `<html><body style=\"font-family:sans-serif;max-width:600px;\"><h3>Onboarding Intervention Sent</h3><table style=\"border-collapse:collapse;width:100%;\"><tr><td style=\"padding:6px;font-weight:bold;\">Account</td><td style=\"padding:6px;\">${account.company_name}</td></tr><tr><td style=\"padding:6px;font-weight:bold;\">Stuck Step</td><td style=\"padding:6px;\">${account.current_stuck_step}</td></tr><tr><td style=\"padding:6px;font-weight:bold;\">Hours Stalled</td><td style=\"padding:6px;\">${account.hours_since_activity}h</td></tr><tr><td style=\"padding:6px;font-weight:bold;\">Escalation</td><td style=\"padding:6px;\">${account.escalation_label}</td></tr><tr><td style=\"padding:6px;font-weight:bold;\">Email Subject Sent</td><td style=\"padding:6px;\">${account.template_subject}</td></tr><tr><td style=\"padding:6px;font-weight:bold;\">Health Score</td><td style=\"padding:6px;\">${account.health_score}/100</td></tr></table><p style=\"color:#666;font-size:12px;\">Logged automatically by OnboardIQ.</p></body></html>`;\n\nreturn [{ json: { ...account, csm_notify_subject: subject, csm_notify_body: body } }];"
+      },
+      "id": "e58e188a-b08d-46e0-bb6c-9269cde5a04f",
+      "name": "Build CSM Notification Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.csm_email }}",
+        "subject": "={{ $json.csm_notify_subject }}",
+        "message": "={{ $json.csm_notify_body }}",
+        "options": {}
+      },
+      "id": "9147ec95-2938-419c-9f98-699c3e95cb44",
+      "name": "Send CSM Notification Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        2620,
+        280
+      ],
+      "webhookId": "c350be47-583b-4573-9334-e89d5963b41e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oIdFZ2FQ3e90YGF4",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTVVxD6nCoyguh2",
+          "mode": "list",
+          "cachedResultName": "Interventions",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblTVVxD6nCoyguh2"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Account (Company Name)": "=={{ [$('Merge Template with Account').first().json.record_id] }}",
+            "stuck_step": "={{ $('Merge Template with Account').first().json.current_stuck_step }}",
+            "Intervention Type": "={{ $('Merge Template with Account').first().json.intervention_type }}",
+            "Sent At": "=={{ $now.toISO() }}",
+            "Template Used": "={{ $('Merge Template with Account').first().json.template_name }}",
+            "outcome": "Pending"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Account (Company Name)",
+              "displayName": "Account (Company Name)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "stuck_step",
+              "displayName": "stuck_step",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Intervention Type",
+              "displayName": "Intervention Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Email",
+                  "value": "Email"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Sent At",
+              "displayName": "Sent At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Template Used",
+              "displayName": "Template Used",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "outcome",
+              "displayName": "outcome",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pending",
+                  "value": "Pending"
+                },
+                {
+                  "name": "No Response",
+                  "value": "No Response"
+                },
+                {
+                  "name": "Successful",
+                  "value": "Successful"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "CSM Notified",
+              "displayName": "CSM Notified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Templates",
+              "displayName": "Templates",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "681870e9-7eec-4757-84bd-196315fa85ad",
+      "name": "Log Intervention Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        480
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblyMY6gdrCKKxomr",
+          "mode": "list",
+          "cachedResultName": "Accounts",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblyMY6gdrCKKxomr"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Merge Template with Account').first().json.record_id }}",
+            "onboarding_status": "Stalled",
+            "current_stuck_step": "={{ $('Merge Template with Account').first().json.current_stuck_step }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "company_name",
+              "displayName": "company_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "domain",
+              "displayName": "domain",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "plan",
+              "displayName": "plan",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "trial_start",
+              "displayName": "trial_start",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "trial_end",
+              "displayName": "trial_end",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "account_owner",
+              "displayName": "account_owner",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "csm_email",
+              "displayName": "csm_email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "onboarding_status",
+              "displayName": "onboarding_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "health_score",
+              "displayName": "health_score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "current_stuck_step",
+              "displayName": "current_stuck_step",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "hours_since_last_activity",
+              "displayName": "hours_since_last_activity",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Milestones",
+              "displayName": "Milestones",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "b2acf3ae-aea0-4292-8c29-507c1544ae0f",
+      "name": "Update Account – Mark Stalled",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        480
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "c41db748-8a86-4fcd-83d1-670c83b1bd8f",
+      "name": "Trial End Check Cron",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        1100
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "ff3e4dd1-d2f8-4e22-b787-2f46d73f6f29",
+      "name": "Loop Expiring Accounts",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        480,
+        1100
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ 'admin@' + $json.domain }}",
+        "subject": "={{ $json.email_subject }}",
+        "message": "={{ $json.email_body }}",
+        "options": {}
+      },
+      "id": "8f1e1fdd-47e7-4989-abcc-9904802d4dea",
+      "name": "Send Trial Summary Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        1100
+      ],
+      "webhookId": "cbb22357-9ca5-4c24-80ed-23360342d387",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oIdFZ2FQ3e90YGF4",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $('Build Trial Summary Email1').first().json.needs_rescue }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "52b420fc-c7b5-4ce9-b555-ce7769b749d1",
+      "name": "Completion Below 50%?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        1100
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "sales@yourcompany.com",
+        "subject": "={{ $json.sales_subject }}",
+        "message": "={{ $json.sales_body }}",
+        "options": {}
+      },
+      "id": "07bfc66a-7433-42c3-b1f6-86a20a2359ca",
+      "name": "Send Sales Escalation Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        1020
+      ],
+      "webhookId": "1670f233-f4c2-459f-b5f4-0c7a13a39e7d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oIdFZ2FQ3e90YGF4",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-account",
+        "options": {}
+      },
+      "id": "6eab8e7b-4db2-451c-9ba5-35dee8b0024e",
+      "name": "New Account Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        -120
+      ],
+      "webhookId": "onboardiq-new-account"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\nconst trialStart = new Date();\nconst trialEnd = new Date(trialStart.getTime() + 14 * 24 * 60 * 60 * 1000);\n\nreturn [{\n  json: {\n    company_name: body.company_name,\n    domain: body.domain,\n    plan: body.plan || 'Trial',\n    account_id: body.account_id,\n    csm_email: body.csm_email || 'cs@yourcompany.com',\n    account_owner: body.csm_name || 'Unassigned',\n    trial_start: (trialStart.getMonth()+1) + '/' + trialStart.getDate() + '/' + trialStart.getFullYear(),\n    trial_end: (trialEnd.getMonth()+1) + '/' + trialEnd.getDate() + '/' + trialEnd.getFullYear(),\n    onboarding_status: 'Onboarding',\n    health_score: 100,\n    current_stuck_step: '',\n    hours_since_last_activity: 0,\n    milestones: [\n      { step_name: 'Account Setup',      step_order: 1, is_blocking: true  },\n      { step_name: 'API Setup',          step_order: 2, is_blocking: true  },\n      { step_name: 'Team Invite',        step_order: 3, is_blocking: false },\n      { step_name: 'First Integration',  step_order: 4, is_blocking: true  },\n      { step_name: 'First Report',       step_order: 5, is_blocking: false },\n      { step_name: 'Dashboard Reviewed', step_order: 6, is_blocking: false }\n    ]\n  }\n}];"
+      },
+      "id": "5bed0a46-763f-4cfa-b9bc-d7bbc4d09542",
+      "name": "Prepare Account Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblyMY6gdrCKKxomr",
+          "mode": "list",
+          "cachedResultName": "Accounts",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblyMY6gdrCKKxomr"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "health_score": 0,
+            "hours_since_last_activity": 0,
+            "domain": "={{ $json.domain }}",
+            "company_name": "={{ $json.company_name }}",
+            "account_id": "={{ $json.account_id }}",
+            "plan": "={{ $json.plan }}",
+            "trial_start": "={{ $json.trial_start }}",
+            "trial_end": "={{ $json.trial_end }}",
+            "account_owner": "={{ $json.account_owner }}",
+            "csm_email": "={{ $json.csm_email }}",
+            "onboarding_status": "={{ $json.onboarding_status }}",
+            "current_stuck_step": "={{ $json.current_stuck_step }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "company_name",
+              "displayName": "company_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "domain",
+              "displayName": "domain",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "plan",
+              "displayName": "plan",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "trial_start",
+              "displayName": "trial_start",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "trial_end",
+              "displayName": "trial_end",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "account_owner",
+              "displayName": "account_owner",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "csm_email",
+              "displayName": "csm_email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "onboarding_status",
+              "displayName": "onboarding_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "health_score",
+              "displayName": "health_score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "current_stuck_step",
+              "displayName": "current_stuck_step",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "hours_since_last_activity",
+              "displayName": "hours_since_last_activity",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "29601f52-ab00-46fb-8672-fa66c807cfba",
+      "name": "Create Account in Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        460,
+        -120
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const account = $input.first().json;\nconst airtableRecordId = account.id;\nconst milestones = $('Prepare Account Data').first().json.milestones;\n\nreturn milestones.map(m => ({\n  json: {\n    account_record_id: airtableRecordId,\n    step_name: m.step_name,\n    step_order: m.step_order,\n    status: 'Pending',\n    is_blocking: m.is_blocking,\n    completed_at: null,\n    hours_to_complete: null\n  }\n}));"
+      },
+      "id": "00ca057d-ea1f-4359-a100-7fa80a07bacb",
+      "name": "Prepare Milestone Records",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwgmQhJaT5Rzvl4",
+          "mode": "list",
+          "cachedResultName": "Milestones",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblwgmQhJaT5Rzvl4"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "step_name": "={{ $json.step_name }}",
+            "step_order": "={{ $json.step_order }}",
+            "status": "={{ $json.status }}",
+            "is_blocking": "=={{ $json.is_blocking === true ? 1 : 0 }}",
+            "hours_to_complete": "={{ $json.hours_to_complete }}",
+            "completed_at": "={{ $json.completed_at }}",
+            "Accounts": "={{ [$json.account_record_id] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "step_name",
+              "displayName": "step_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "step_order",
+              "displayName": "step_order",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "hours_to_complete",
+              "displayName": "hours_to_complete",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "is_blocking",
+              "displayName": "is_blocking",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Accounts",
+              "displayName": "Accounts",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e05752d1-f1c1-4b76-9850-8810eda543e2",
+      "name": "Create Milestone Records",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        940,
+        -120
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "milestone-complete",
+        "options": {}
+      },
+      "id": "4a755fd3-2c04-4aaa-991f-f2b6a51e0b10",
+      "name": "Milestone Completion Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        180
+      ],
+      "webhookId": "onboardiq-milestone-complete"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblKOjYHMJCBXlGrn",
+          "mode": "list",
+          "cachedResultName": "Webhook Log",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblKOjYHMJCBXlGrn"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Processed": false,
+            "Event Type": "milestone_complete",
+            "Payload": "={{ JSON.stringify($json.body) }}",
+            "Received At": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Id",
+              "displayName": "Id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Payload",
+              "displayName": "Payload",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Received At",
+              "displayName": "Received At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Processed",
+              "displayName": "Processed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Event Type",
+              "displayName": "Event Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "new_account",
+                  "value": "new_account"
+                },
+                {
+                  "name": "milestone_complete",
+                  "value": "milestone_complete"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "ecc70ace-3fc7-4c49-b2a4-850a7b51353f",
+      "name": "Log Webhook Payload",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        220,
+        180
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwgmQhJaT5Rzvl4",
+          "mode": "list",
+          "cachedResultName": "Milestones",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblwgmQhJaT5Rzvl4"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "Completed",
+            "completed_at": "={{ $now.toISO() }}",
+            "id": "={{ $('Milestone Completion Webhook').first().json.body.milestone_record_id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "step_name",
+              "displayName": "step_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "step_order",
+              "displayName": "step_order",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "hours_to_complete",
+              "displayName": "hours_to_complete",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "is_blocking",
+              "displayName": "is_blocking",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Accounts",
+              "displayName": "Accounts",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "6d4c5a3f-355d-492c-af40-907376daa9fc",
+      "name": "Update Milestone Status",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        460,
+        180
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwgmQhJaT5Rzvl4",
+          "mode": "list",
+          "cachedResultName": "Milestones",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblwgmQhJaT5Rzvl4"
+        },
+        "filterByFormula": "={{ 'FIND(\"' + $('Milestone Completion Webhook').first().json.body.account_record_id + '\", ARRAYJOIN({Accounts})) > 0' }}",
+        "options": {}
+      },
+      "id": "06bf808d-9a24-4906-921a-74186c00b18c",
+      "name": "Get Account Milestones",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        700,
+        180
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const milestones = $input.all().map(i => i.json);\nconst total = milestones.length;\nconst completed = milestones.filter(m => m['status'] === 'Completed').length;\nconst interventionsReceived = parseInt($('Milestone Completion Webhook').first().json.body.interventions_count || 0);\nconst completionRatio = total > 0 ? completed / total : 0;\nconst healthScore = Math.max(0, Math.round(completionRatio * 100) - (interventionsReceived * 10));\n\nreturn [{\n  json: {\n    account_record_id: $('Milestone Completion Webhook').first().json.body.account_record_id,\n    milestones_completed: completed,\n    total_milestones: total,\n    completion_pct: Math.round(completionRatio * 100),\n    health_score: healthScore,\n    last_activity: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "ceb0feb7-fa6b-4a5c-89ef-deffd8407ad9",
+      "name": "Calculate Health Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblyMY6gdrCKKxomr",
+          "mode": "list",
+          "cachedResultName": "Accounts",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblyMY6gdrCKKxomr"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "health_score": "={{ $json.health_score }}",
+            "hours_since_last_activity": 0,
+            "id": "=={{ $json.account_record_id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "company_name",
+              "displayName": "company_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "domain",
+              "displayName": "domain",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "account_id",
+              "displayName": "account_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "plan",
+              "displayName": "plan",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "trial_start",
+              "displayName": "trial_start",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "trial_end",
+              "displayName": "trial_end",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "account_owner",
+              "displayName": "account_owner",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "csm_email",
+              "displayName": "csm_email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "onboarding_status",
+              "displayName": "onboarding_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "health_score",
+              "displayName": "health_score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "current_stuck_step",
+              "displayName": "current_stuck_step",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "hours_since_last_activity",
+              "displayName": "hours_since_last_activity",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Milestones",
+              "displayName": "Milestones",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "cc909ab5-0592-44bc-b531-2bc7d9f68850",
+      "name": "Update Account Health Score",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        180
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "c8fe7d05-2a36-451b-8339-f4f8ebe1bd0f",
+      "name": "Weekly Analytics Cron",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        100,
+        1520
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblyMY6gdrCKKxomr",
+          "mode": "list",
+          "cachedResultName": "Accounts",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblyMY6gdrCKKxomr"
+        },
+        "filterByFormula": "IS_AFTER({trial_start}, DATEADD(TODAY(), -7, 'days'))",
+        "options": {}
+      },
+      "id": "eff09208-2c15-4911-9727-203298206d50",
+      "name": "Fetch All Accounts",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        340,
+        1520
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTVVxD6nCoyguh2",
+          "mode": "list",
+          "cachedResultName": "Interventions",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblTVVxD6nCoyguh2"
+        },
+        "filterByFormula": "=",
+        "returnAll": "={{ true }}",
+        "options": {}
+      },
+      "id": "1b98d9b8-5d99-4af9-a473-28a2073d171a",
+      "name": "Fetch All Interventions",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        540,
+        1520
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const interventions = $input.all().map(i => i.json).filter(i => i['outcome'] !== undefined);\nconst accounts = $('Fetch All Accounts').all().map(i => i.json);\n\nconst totalAccounts = accounts.length;\nconst converted = accounts.filter(a => a['onboarding_status'] === 'Converted').length;\nconst churned = accounts.filter(a => a['onboarding_status'] === 'Churned').length;\nconst stalled = accounts.filter(a => a['onboarding_status'] === 'Stalled').length;\nconst completed = accounts.filter(a => a['onboarding_status'] === 'Completed').length;\n\nconst conversionRate = totalAccounts > 0 ? Math.round((converted / totalAccounts) * 100) : 0;\nconst churnRate = totalAccounts > 0 ? Math.round((churned / totalAccounts) * 100) : 0;\n\nconst successfulInterventions = interventions.filter(i => i['outcome'] === 'Successful').length;\nconst totalInterventions = interventions.length;\nconst interventionSuccessRate = totalInterventions > 0\n  ? Math.round((successfulInterventions / totalInterventions) * 100) : 0;\n\nconst avgHealth = accounts.length > 0\n  ? Math.round(accounts.reduce((s, a) => s + (a['health_score'] || 0), 0) / accounts.length) : 0;\n\nreturn [{\n  json: {\n    week_ending: new Date().toISOString().split('T')[0],\n    total_accounts: totalAccounts,\n    converted, churned, stalled, completed,\n    conversion_rate_pct: conversionRate,\n    churn_rate_pct: churnRate,\n    total_interventions: totalInterventions,\n    successful_interventions: successfulInterventions,\n    intervention_success_rate: interventionSuccessRate,\n    avg_health_score: avgHealth\n  }\n}];"
+      },
+      "id": "f9805cdd-cb42-4a7c-80b5-3433bab97003",
+      "name": "Aggregate CS Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        1520
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "=salmanahmed@92000gmail.com",
+        "subject": "={{ $json.analytics_subject }}",
+        "message": "={{ $json.analytics_body }}",
+        "options": {}
+      },
+      "id": "8745b6ee-2c82-423c-8cb2-f4a9e6e95e5b",
+      "name": "Send Analytics Email1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        1520
+      ],
+      "webhookId": "9037160b-ca82-44eb-b4df-9b4e29d22c4e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oIdFZ2FQ3e90YGF4",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwgmQhJaT5Rzvl4",
+          "mode": "list",
+          "cachedResultName": "Milestones",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblwgmQhJaT5Rzvl4"
+        },
+        "filterByFormula": "=={{ 'FIND(\"' + $json.id + '\", ARRAYJOIN({Accounts})) > 0' }}",
+        "options": {}
+      },
+      "id": "2efd6f49-d9d4-4e73-baac-ef9c7d9b0dca",
+      "name": "Get Milestones for Account1",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        720,
+        1100
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const account = $('Loop Expiring Accounts').first().json;\nconst milestones = $input.all().map(i => i.json);\n\nconst completed = milestones.filter(m => m['status'] === 'Completed');\nconst remaining = milestones.filter(m => m['status'] === 'Pending');\n\nconst completedList = completed.map(m => m['step_name']).join(', ') || 'None';\nconst remainingList = remaining.map(m => m['step_name']).join(', ') || 'None';\n\nconst completionPct = milestones.length > 0\n  ? Math.round((completed.length / milestones.length) * 100)\n  : 0;\n\nreturn [{\n  json: {\n    record_id:            account.id,\n    company_name:         account['company_name'],\n    domain:               account['domain'],\n    plan:                 account['plan'],\n    trial_end:            account['trial_end'],\n    csm_email:            account['csm_email'] || 'cs@yourcompany.com',\n    milestones_completed: completed.length,\n    total_milestones:     milestones.length,\n    completion_pct:       completionPct,\n    completed_steps:      completedList,\n    remaining_steps:      remainingList,\n    health_score:         account['health_score'] || 0,\n    needs_rescue:         completionPct < 50\n  }\n}];"
+      },
+      "id": "5db0d087-f99c-41a6-8296-817e2bd4a375",
+      "name": "Summarize Onboarding Progress1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        1100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const account = $('Summarize Onboarding Progress1').first().json;\nconst pitchText = $input.first().json.message?.content?.[0]?.text\n  || $input.first().json.choices?.[0]?.message?.content\n  || 'You have made great progress — converting to a paid plan ensures uninterrupted access to all your work.';\n\nconst subject = `Your ${account.company_name} Trial Ends in 3 Days — Here's What You've Accomplished`;\n\nconst body = `<html><body style=\"font-family:sans-serif;max-width:600px;margin:auto;\">\n<h2>Your Onboarding Summary</h2>\n<p>Hi ${account.company_name} team,</p>\n<p>Your trial ends on <strong>${account.trial_end}</strong>. Here's a quick look at your journey so far:</p>\n<h3>Milestones Completed (${account.milestones_completed}/${account.total_milestones})</h3>\n<p>${account.completed_steps}</p>\n${account.remaining_steps !== 'None' ? `<h3>Still To Complete</h3><p>${account.remaining_steps}</p>` : ''}\n<hr/>\n<h3>Why Upgrade Now?</h3>\n<p>${pitchText}</p>\n<br/>\n<a href=\"https://yourapp.com/upgrade?ref=trial-summary\" style=\"background:#4F46E5;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;\">Convert to Paid</a>\n<br/><br/>\n<p style=\"color:#666;font-size:12px;\">Reply to this email or book a 15-min call if you have questions.</p>\n</body></html>`;\n\nreturn [{ json: { ...account, email_subject: subject, email_body: body } }];"
+      },
+      "id": "75e50bad-87ac-4273-a6c0-16d5df8421d7",
+      "name": "Build Trial Summary Email1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        1100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const account = $('Summarize Onboarding Progress1').first().json;\n\nconst pitch = `${account.company_name} has completed ${account.milestones_completed} of ${account.total_milestones} onboarding steps including ${account.completed_steps}. Upgrading to a paid plan ensures uninterrupted access and unlocks ${account.remaining_steps} — the features that drive the most long-term value for teams like yours.`;\n\nreturn [{ json: { ...account, message: { content: [{ text: pitch }] } } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        1100
+      ],
+      "id": "cf8811ae-6bbc-4468-a1df-239a1bf7e8c8",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblyMY6gdrCKKxomr",
+          "mode": "list",
+          "cachedResultName": "Accounts",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblyMY6gdrCKKxomr"
+        },
+        "filterByFormula": "=OR({onboarding_status} = 'Onboarding', {onboarding_status} = 'Stalled')",
+        "options": {}
+      },
+      "id": "62bd7850-982d-4570-aecc-4d7585155671",
+      "name": "List Accounts Expiring in 3 Days1",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        240,
+        1100
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const account = $('Build Trial Summary Email1').first().json;\n\nconst subject = `[URGENT] Rescue Call Needed – ${account.company_name} trial ends ${account.trial_end}`;\n\nconst body = `<html><body style=\"font-family:sans-serif;max-width:600px;\">\n<h2 style=\"color:#DC2626;\">Rescue Call Needed — Trial Expiring</h2>\n<table style=\"border-collapse:collapse;width:100%;\">\n<tr><td style=\"padding:6px;font-weight:bold;\">Account</td><td style=\"padding:6px;\">${account.company_name}</td></tr>\n<tr><td style=\"padding:6px;font-weight:bold;\">Domain</td><td style=\"padding:6px;\">${account.domain}</td></tr>\n<tr><td style=\"padding:6px;font-weight:bold;\">Trial Ends</td><td style=\"padding:6px;\">${account.trial_end}</td></tr>\n<tr><td style=\"padding:6px;font-weight:bold;\">Completion</td><td style=\"padding:6px;\">${account.completion_pct}%</td></tr>\n<tr><td style=\"padding:6px;font-weight:bold;\">Health Score</td><td style=\"padding:6px;\">${account.health_score}/100</td></tr>\n<tr><td style=\"padding:6px;font-weight:bold;\">Completed Steps</td><td style=\"padding:6px;\">${account.completed_steps}</td></tr>\n<tr><td style=\"padding:6px;font-weight:bold;\">Missing Steps</td><td style=\"padding:6px;\">${account.remaining_steps}</td></tr>\n</table>\n<p style=\"color:#DC2626;\"><strong>Trial summary already sent. Schedule a conversion call ASAP.</strong></p>\n</body></html>`;\n\nreturn [{ json: { ...account, sales_subject: subject, sales_body: body } }];"
+      },
+      "id": "647ac2e9-e828-49ff-b445-ce7371ddecf3",
+      "name": "Build Sales Escalation Email1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2180,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblyMY6gdrCKKxomr",
+          "mode": "list",
+          "cachedResultName": "Accounts",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblyMY6gdrCKKxomr"
+        },
+        "filterByFormula": "AND({onboarding_status} = 'Onboarding', IS_AFTER({trial_end}, TODAY()))",
+        "options": {}
+      },
+      "id": "002382f5-94b6-4bb6-9578-0c9d9d2891b9",
+      "name": "List Active Onboarding Accounts1",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        220,
+        600
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const account = item.json;\n  const hoursSince = account['hours_since_last_activity'] || 0;\n\n  return {\n    json: {\n      record_id:            account.id,\n      company_name:         account['company_name'],\n      domain:               account['domain'],\n      plan:                 account['plan'],\n      trial_end:            account['trial_end'],\n      current_stuck_step:   account['current_stuck_step'] || 'Account Setup',\n      hours_since_activity: hoursSince,\n      csm_email:            account['csm_email'] || 'cs@yourcompany.com',\n      health_score:         account['health_score'] || 100,\n      account_owner:        account['account_owner'] || 'CSM'\n    }\n  };\n});"
+      },
+      "id": "0dc92319-4483-47b8-b7aa-db1a53653496",
+      "name": "Calculate Hours Since Activity1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appAX9qslLX4iHWVZ",
+          "mode": "list",
+          "cachedResultName": "Automated B2B Customer Onboarding Orchestration Engine",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTVVxD6nCoyguh2",
+          "mode": "list",
+          "cachedResultName": "Interventions",
+          "cachedResultUrl": "https://airtable.com/appAX9qslLX4iHWVZ/tblTVVxD6nCoyguh2"
+        },
+        "filterByFormula": "=={{ 'AND(FIND(\"' + $json.record_id + '\", ARRAYJOIN({Account (Company Name)})) > 0, {stuck_step} = \"' + $json.current_stuck_step + '\", {outcome} != \"No Response\")' }}",
+        "options": {}
+      },
+      "id": "7dc292f3-eb5b-4080-b732-f5f4768119ab",
+      "name": "Check Idempotency",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        480
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "wCn5XUeze0GUVjga",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const m = $input.first().json;\n\nconst subject = `[OnboardIQ] Weekly Onboarding Report – Week ending ${m.week_ending}`;\n\nconst body = `<html><body style=\"font-family:sans-serif;max-width:640px;\">\n<h2>Weekly Onboarding Report</h2>\n<p><strong>Week Ending:</strong> ${m.week_ending}</p>\n<h3>Account Overview</h3>\n<table style=\"border-collapse:collapse;width:100%;\">\n<tr><td style=\"padding:6px;\">New Accounts</td><td>${m.total_accounts}</td></tr>\n<tr><td style=\"padding:6px;\">Converted</td><td>${m.converted} (${m.conversion_rate_pct}%)</td></tr>\n<tr><td style=\"padding:6px;\">Churned</td><td>${m.churned} (${m.churn_rate_pct}%)</td></tr>\n<tr><td style=\"padding:6px;\">Stalled</td><td>${m.stalled}</td></tr>\n<tr><td style=\"padding:6px;\">Completed</td><td>${m.completed}</td></tr>\n</table>\n<h3>Interventions</h3>\n<table style=\"border-collapse:collapse;width:100%;\">\n<tr><td style=\"padding:6px;\">Total Sent</td><td>${m.total_interventions}</td></tr>\n<tr><td style=\"padding:6px;\">Successful</td><td>${m.successful_interventions}</td></tr>\n<tr><td style=\"padding:6px;\">Success Rate</td><td>${m.intervention_success_rate}%</td></tr>\n</table>\n<h3>Avg Health Score: ${m.avg_health_score}/100</h3>\n</body></html>`;\n\nreturn [{ json: { ...m, analytics_subject: subject, analytics_body: body } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        1520
+      ],
+      "id": "68cf2bd5-2208-438a-bd7a-1287442c1f3d",
+      "name": "Send Analytics Email"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Stall Detection Cron": {
+      "main": [
+        [
+          {
+            "node": "List Active Onboarding Accounts1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Through Accounts": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stalled >= 120h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stalled >= 120h": {
+      "main": [
+        [
+          {
+            "node": "Set Escalation Level",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stalled >= 96h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stalled >= 96h": {
+      "main": [
+        [
+          {
+            "node": "Set Escalation Level",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stalled >= 72h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stalled >= 72h": {
+      "main": [
+        [
+          {
+            "node": "Set Escalation Level",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stalled >= 48h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stalled >= 48h": {
+      "main": [
+        [
+          {
+            "node": "Set Escalation Level",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stalled >= 24h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stalled >= 24h": {
+      "main": [
+        [
+          {
+            "node": "Set Escalation Level",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Action Required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Escalation Level": {
+      "main": [
+        [
+          {
+            "node": "Check Idempotency",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intervention Already Sent?": {
+      "main": [
+        [
+          {
+            "node": "Skip – Already Intervened",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Intervention Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Intervention Template": {
+      "main": [
+        [
+          {
+            "node": "Merge Template with Account",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Template with Account": {
+      "main": [
+        [
+          {
+            "node": "Send Intervention Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Intervention Email": {
+      "main": [
+        [
+          {
+            "node": "Build CSM Notification Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Intervention Record": {
+      "main": [
+        [
+          {
+            "node": "Update Account – Mark Stalled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Account – Mark Stalled": {
+      "main": [
+        [
+          {
+            "node": "Loop Through Accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trial End Check Cron": {
+      "main": [
+        [
+          {
+            "node": "List Accounts Expiring in 3 Days1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Expiring Accounts": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get Milestones for Account1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Trial Summary Email": {
+      "main": [
+        [
+          {
+            "node": "Completion Below 50%?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Completion Below 50%?": {
+      "main": [
+        [
+          {
+            "node": "Build Sales Escalation Email1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Expiring Accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build CSM Notification Email": {
+      "main": [
+        [
+          {
+            "node": "Send CSM Notification Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send CSM Notification Email": {
+      "main": [
+        [
+          {
+            "node": "Log Intervention Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Sales Escalation Email": {
+      "main": [
+        [
+          {
+            "node": "Loop Expiring Accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New Account Webhook": {
+      "main": [
+        [
+          {
+            "node": "Prepare Account Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Account Data": {
+      "main": [
+        [
+          {
+            "node": "Create Account in Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Account in Airtable": {
+      "main": [
+        [
+          {
+            "node": "Prepare Milestone Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Milestone Records": {
+      "main": [
+        [
+          {
+            "node": "Create Milestone Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Milestone Completion Webhook": {
+      "main": [
+        [
+          {
+            "node": "Log Webhook Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Webhook Payload": {
+      "main": [
+        [
+          {
+            "node": "Update Milestone Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Milestone Status": {
+      "main": [
+        [
+          {
+            "node": "Get Account Milestones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Account Milestones": {
+      "main": [
+        [
+          {
+            "node": "Calculate Health Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Health Score": {
+      "main": [
+        [
+          {
+            "node": "Update Account Health Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weekly Analytics Cron": {
+      "main": [
+        [
+          {
+            "node": "Fetch All Accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch All Accounts": {
+      "main": [
+        [
+          {
+            "node": "Fetch All Interventions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch All Interventions": {
+      "main": [
+        [
+          {
+            "node": "Aggregate CS Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate CS Metrics": {
+      "main": [
+        [
+          {
+            "node": "Send Analytics Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Milestones for Account1": {
+      "main": [
+        [
+          {
+            "node": "Summarize Onboarding Progress1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Onboarding Progress1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Build Trial Summary Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Trial Summary Email1": {
+      "main": [
+        [
+          {
+            "node": "Send Trial Summary Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Accounts Expiring in 3 Days1": {
+      "main": [
+        [
+          {
+            "node": "Loop Expiring Accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Sales Escalation Email1": {
+      "main": [
+        [
+          {
+            "node": "Send Sales Escalation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Active Onboarding Accounts1": {
+      "main": [
+        [
+          {
+            "node": "Calculate Hours Since Activity1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Hours Since Activity1": {
+      "main": [
+        [
+          {
+            "node": "Loop Through Accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Idempotency": {
+      "main": [
+        [
+          {
+            "node": "Intervention Already Sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Analytics Email": {
+      "main": [
+        [
+          {
+            "node": "Send Analytics Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b4bc6fc1-96de-4350-aa0c-4060b80f0300",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "63337bc4908e426c296b1600ab54738c74d93dbb25905d6071af6b82467154cb"
+  },
+  "id": "hjyni4qGIfcj1TZx",
+  "tags": [
+    {
+      "name": "onboarding",
+      "id": "9Vh0ezv2vs6slqbt",
+      "createdAt": "2026-05-02T08:03:07.808Z",
+      "updatedAt": "2026-05-02T08:03:07.808Z"
+    },
+    {
+      "name": "automation",
+      "id": "GOPhxksZZeVPIpEY",
+      "createdAt": "2026-05-02T08:03:07.820Z",
+      "updatedAt": "2026-05-02T08:03:07.820Z"
+    },
+    {
+      "name": "customer-success",
+      "id": "I3RGKMJvYl9euWgb",
+      "createdAt": "2026-05-02T08:03:07.825Z",
+      "updatedAt": "2026-05-02T08:03:07.825Z"
+    }
+  ]
+}

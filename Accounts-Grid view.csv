@@ -1,0 +1,3 @@
+﻿company_name,domain,account_id,plan,trial_start,trial_end,account_owner,csm_email,onboarding_status,health_score,current_stuck_step,hours_since_last_activity,Milestones
+,,,,,,,,,,,,
+Test Corp,testcorp.com,acc_001,Growth,2026-05-01T15:00:00.000-04:00,2026-05-15T15:00:00.000-04:00,Salman Ahmed,salmanahmed92000@gmail.com,Stalled,0,API Setup,50,"Account Setup,API Setup,Team Invite,First Integration,First Report,Dashboard Reviewed,Account Setup,API Setup,Team Invite,First Integration,First Report,Dashboard Reviewed"
