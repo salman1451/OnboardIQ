@@ -11,7 +11,6 @@
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Airtable Schema](#airtable-schema)
-- [Why I built it this way](#why-i-built-it-this-way)
 - [How to set it up](#how-to-set-it-up)
 - [Testing things out](#testing)
 - [Project Structure](#project-structure)
@@ -105,13 +104,6 @@ Helper tables for routing emails to the right CSM and keeping a raw log of every
 
 ---
 
-## Why I built it this way
-
-- **Content vs Logic:** I didn't want to hardcode email text into n8n. Keeping templates in Airtable means the CS team can update the copy themselves.
-- **Don't Spam Users:** I built an "idempotency" check. Before sending any nudge, the system checks if it already sent that specific one. This prevents people from getting 5 emails if a cron job runs twice.
-- **Health is more than completion:** If a customer needs 3 nudges to finish a step, they are less "healthy" than someone who did it themselves. The Health Score reflects this by subtracting points for every intervention.
-
----
 
 ## How to set it up
 
